@@ -1,0 +1,80 @@
+[
+  {
+    "id": "V1",
+    "type": "vehicle",
+    "name": "Rescue Vehicle Base",
+    "lat": 32.3400,
+    "lon": 36.1900
+  },
+  {
+    "id": "P1",
+    "type": "pickup",
+    "name": "Pickup Group 1",
+    "lat": 32.3420,
+    "lon": 36.1850,
+    "group_size": 10,
+    "severity_level": 2,
+    "special_medical_need": false,
+    "status": "waiting"
+  },
+  {
+    "id": "P2",
+    "type": "pickup",
+    "name": "Pickup Group 2",
+    "lat": 32.3440,
+    "lon": 36.1920,
+    "group_size": 6,
+    "severity_level": 3,
+    "special_medical_need": true,
+    "status": "waiting"
+  },
+  {
+    "id": "P3",
+    "type": "pickup",
+    "name": "Pickup Group 3",
+    "lat": 32.3380,
+    "lon": 36.1820,
+    "group_size": 14,
+    "severity_level": 1,
+    "special_medical_need": false,
+    "status": "waiting"
+  },
+  {
+    "id": "P4",
+    "type": "pickup",
+    "name": "Pickup Group 4",
+    "lat": 32.3370,
+    "lon": 36.1880,
+    "group_size": 8,
+    "severity_level": 2,
+    "special_medical_need": false,
+    "status": "waiting"
+  },
+  {
+    "id": "S1",
+    "type": "shelter",
+    "name": "Shelter North",
+    "lat": 32.3460,
+    "lon": 36.1990,
+    "capacity": 20,
+    "current_occupancy": 4
+  },
+  {
+    "id": "S2",
+    "type": "shelter",
+    "name": "Shelter West",
+    "lat": 32.3360,
+    "lon": 36.1780,
+    "capacity": 15,
+    "current_occupancy": 6
+  },
+  {
+    "id": "H1",
+    "type": "hospital",
+    "name": "Al-Mafraq Hospital",
+    "lat": 32.34371,
+    "lon": 36.19769,
+    "capacity": 8,
+    "current_occupancy": 2
+  }
+]
