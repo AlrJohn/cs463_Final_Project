@@ -1,6 +1,12 @@
-"""One-page Streamlit app for the evacuation support tool."""
+"""
+One-page Streamlit app for evacuation route and group-priority planning.
 
-from __future__ import annotations
+Main UI flow:
+1. load scenario data and session state
+2. let user update road conditions
+3. run planner to compute best pickup+destination
+4. render map, metrics, and ranking tables
+"""
 
 import pandas as pd
 import streamlit as st
@@ -27,35 +33,69 @@ st.set_page_config(page_title=APP_TITLE, layout="wide")
 
 
 @st.cache_data
-def load_static_data() -> tuple[list[dict], list[dict], dict]:
-    return load_nodes(), load_edges(), load_metadata()
+def load_static_data():
+    """
+    Load immutable scenario files once and cache them.
+
+    Returns:
+        Tuple (nodes, edges, metadata)
+    """
+    nodes = load_nodes()
+    edges = load_edges()
+    metadata = load_metadata()
+    return nodes, edges, metadata
 
 
-def build_rankings_table(rankings: list[dict]) -> pd.DataFrame:
+def build_rankings_table(rankings):
+    """
+    Convert planner ranking dicts into a display DataFrame.
+
+    Args:
+        rankings: List of planner evaluation dictionaries
+
+    Returns:
+        Pandas DataFrame for the ranking table UI
+    """
     rows = []
+
     for item in rankings:
         pickup = item.get("pickup", {})
         destination = item.get("destination", {})
-        rows.append(
-            {
-                "Pickup Group": pickup.get("name", pickup.get("id", "N/A")),
-                "Reachable": item.get("reachable", False),
-                "Destination": destination.get("name", "N/A") if item.get("reachable") else "N/A",
-                "Score": round(item.get("score", 0), 2) if item.get("reachable") else None,
-                "Total Route Cost": round(item.get("total_route_cost", 0), 2) if item.get("reachable") else None,
-                "Travel Time": round(item.get("total_route_time", 0), 2) if item.get("reachable") else None,
-                "Danger": round(item.get("total_danger", 0), 2) if item.get("reachable") else None,
-                "Reason": item.get("reason", ""),
-            }
-        )
+
+        row = {
+            "Rank": item.get("rank") if item.get("reachable") else None,
+            "Pickup Group": pickup.get("name", pickup.get("id", "N/A")),
+            "Reachable": item.get("reachable", False),
+            "Destination": destination.get("name", "N/A") if item.get("reachable") else "N/A",
+            "Medical Need": pickup.get("special_medical_need", False) if item.get("reachable") else None,
+            "Severity": pickup.get("severity_level", None) if item.get("reachable") else None,
+            "Score": round(item.get("score", 0), 2) if item.get("reachable") else None,
+            "Total Route Cost": round(item.get("total_route_cost", 0), 2) if item.get("reachable") else None,
+            "Travel Time": round(item.get("total_route_time", 0), 2) if item.get("reachable") else None,
+            "Danger": round(item.get("total_danger", 0), 2) if item.get("reachable") else None,
+            "Reason": item.get("reason", ""),
+        }
+        rows.append(row)
+
     return pd.DataFrame(rows)
 
 
-def main() -> None:
+def main():
+    """
+    Render the full Streamlit evacuation-planning interface.
+
+    UI Flow:
+    1. Load data and session state
+    2. Apply road status updates
+    3. Run planner when requested
+    4. Render map, recommended plan, and detail tables
+    """
+    # Step 1: load static data and initialize session state.
     nodes, default_edges, metadata = load_static_data()
     initialize_state(default_edges)
     edges = get_edges()
 
+    # Step 2: page heading and scenario context.
     st.title(APP_TITLE)
     st.caption(APP_SUBTITLE)
 
@@ -64,6 +104,7 @@ def main() -> None:
     st.sidebar.markdown(f"**Region:** {metadata.get('region', 'Not specified')}")
     st.sidebar.markdown(metadata.get("description", ""))
 
+    # Step 3: road-status controls.
     edge_options = {
         f"{edge['id']} | {edge['from_node']} <-> {edge['to_node']}": edge["id"] for edge in edges
     }
@@ -93,6 +134,7 @@ def main() -> None:
             reset_edges()
             st.rerun()
 
+    # Step 4: run planner on demand.
     if st.sidebar.button("Run Planner", type="primary", use_container_width=True):
         graph, _ = build_graph(nodes, get_edges())
         best_plan, rankings = choose_best_plan(graph, nodes)
@@ -101,6 +143,7 @@ def main() -> None:
     best_plan = st.session_state.get("plan_result")
     rankings = st.session_state.get("plan_rankings", [])
 
+    # Step 5: map + result summary layout.
     map_col, results_col = st.columns([1.55, 1], gap="large")
 
     with map_col:
@@ -113,6 +156,7 @@ def main() -> None:
         if best_plan:
             pickup = best_plan["pickup"]
             destination = best_plan["destination"]
+
             st.metric("Recommended Pickup Group", pickup["name"])
             st.metric("Destination", destination["name"])
 
@@ -140,6 +184,7 @@ def main() -> None:
         else:
             st.warning("Run the planner to generate the current recommendation.")
 
+    # Step 6: detail tables.
     st.divider()
 
     left, right = st.columns(2, gap="large")

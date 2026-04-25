@@ -1,6 +1,12 @@
-"""Global configuration for the evacuation planner app."""
+"""
+Global configuration for the evacuation route and priority planner.
 
-from __future__ import annotations
+This file stores:
+- Road status labels and penalties
+- Routing cost weights
+- Group-priority scoring weights
+- Map/UI constants
+"""
 
 # Edge status values
 ROAD_OPEN = "open"
@@ -14,6 +20,10 @@ DANGER_PENALTIES = {
     ROAD_DANGEROUS: 15,
     ROAD_BLOCKED: float("inf"),
 }
+
+# Routing weights used by the risk-aware Dijkstra variant.
+ROUTE_TRAVEL_TIME_WEIGHT = 1.0
+ROUTE_DANGER_WEIGHT = 1.0
 
 # Prioritization weights for the greedy group-selection rule.
 SEVERITY_MULTIPLIER = 20

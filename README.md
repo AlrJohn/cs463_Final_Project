@@ -12,7 +12,7 @@ The system balances **speed and safety** under changing road conditions.
 - fixed scenario based on a simplified Al-Mafraq, Jordan setting
 - one vehicle, four pickup groups, two shelters, and one hospital
 - user-controlled road updates: `open`, `dangerous`, `blocked`
-- Dijkstra's algorithm for weighted route computation
+- explicit Dijkstra-style implementation (min-heap) for weighted route computation
 - greedy prioritization rule for selecting the next pickup group
 - shelter and hospital capacity checks
 - one-page Streamlit UI with map, controls, outputs, and ranking table
@@ -33,7 +33,7 @@ data/
 src/
   data_loader.py
   graph_builder.py
-  routing.py
+  risk_routing.py
   prioritization.py
   planner.py
   map_view.py
@@ -59,17 +59,40 @@ streamlit run app.py
 ## Core Algorithm Design
 
 ### Routing
-The app uses **Dijkstra's algorithm** on a weighted graph.
+The app uses a **risk-aware Dijkstra-style algorithm** on a weighted graph.
 
 Edge weight is computed as:
 
 ```text
-travel_time + danger_penalty
+(ROUTE_TRAVEL_TIME_WEIGHT * travel_time) + (ROUTE_DANGER_WEIGHT * danger_penalty)
 ```
 
 - `open` roads keep their normal travel cost
 - `dangerous` roads add a penalty
 - `blocked` roads are removed from the working graph
+
+Routing steps:
+
+1. Initialize all node distances to infinity and source distance to 0.
+2. Push source into a min-heap as `(distance, node)`.
+3. Repeatedly pop the node with smallest distance.
+4. Relax each neighbor edge using the risk-aware edge cost.
+5. Reconstruct path from destination back to source using parent pointers.
+
+Implementation details:
+
+- `src/risk_routing.py` contains:
+  - `compute_edge_cost(...)`
+  - `dijkstra_path(...)` (explicit heap-based Dijkstra implementation)
+  - `best_destination_path(...)`
+  - `path_metrics(...)`
+- `src/planner.py` runs this routing twice for each waiting group:
+  - vehicle -> pickup
+  - pickup -> best feasible destination
+- Feasibility constraints:
+  - medical-need groups can only go to hospital
+  - non-medical groups are routed to shelters
+  - destination must have enough remaining capacity
 
 ### Priority Selection
 For each waiting pickup group, the planner evaluates:
@@ -86,9 +109,14 @@ The current MVP score is:
 (severity_level * 20) + (group_size * 2) - total_route_cost
 ```
 
-## Suggested Next Steps
+This keeps routing and prioritization separate:
+- routing finds minimum-cost feasible paths
+- scoring chooses which feasible group should be served next
 
-- add alternate route suggestions
-- compare before/after route states
-- allow optional hospital-only routing for severe groups
-- export a short scenario summary for the final presentation
+Planner steps:
+
+1. For each waiting pickup group, find vehicle -> pickup route.
+2. Filter feasible destinations by medical rule and remaining capacity.
+3. Find pickup -> best destination route.
+4. Aggregate total cost/time/danger.
+5. Score and rank all reachable groups, then choose the top option.

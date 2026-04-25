@@ -1,23 +1,41 @@
-﻿"""Map rendering helpers using Folium."""
+"""
+Map rendering helpers using Folium.
 
-from __future__ import annotations
-
-from typing import Any
+This module draws:
+- node markers
+- roads with status colors
+- recommended route overlays
+"""
 
 import folium
 
 from config import MAP_CENTER, MAP_TILES, MAP_ZOOM, NODE_COLORS, ROAD_COLORS, ROUTE_COLOR, SECOND_ROUTE_COLOR
 
 
-def _node_position(node: dict[str, Any]) -> list[float]:
+def node_position(node):
+    """
+    Args:
+        node: Node dictionary with lat/lon keys
+
+    Returns:
+        List [latitude, longitude]
+    """
     return [float(node["lat"]), float(node["lon"])]
 
 
-def _add_node_markers(map_obj: folium.Map, nodes: list[dict[str, Any]]) -> None:
+def add_node_markers(map_obj, nodes):
+    """
+    Add map markers for vehicle, pickup, shelter, and hospital nodes.
+
+    Args:
+        map_obj: Folium map object
+        nodes: List of node dictionaries
+    """
     for node in nodes:
         node_type = node.get("type", "pickup")
         color = NODE_COLORS.get(node_type, "gray")
         popup_lines = [f"<b>{node.get('name', node['id'])}</b>", f"Type: {node_type}"]
+
         if node_type == "pickup":
             popup_lines.extend(
                 [
@@ -35,14 +53,22 @@ def _add_node_markers(map_obj: folium.Map, nodes: list[dict[str, Any]]) -> None:
             )
 
         folium.Marker(
-            location=_node_position(node),
+            location=node_position(node),
             popup="<br>".join(popup_lines),
             icon=folium.Icon(color=color, icon="info-sign"),
             tooltip=node.get("name", node["id"]),
         ).add_to(map_obj)
 
 
-def _add_edges(map_obj: folium.Map, nodes_lookup: dict[str, dict[str, Any]], edges: list[dict[str, Any]]) -> None:
+def add_edges(map_obj, nodes_lookup, edges):
+    """
+    Draw all roads and color them by their current status.
+
+    Args:
+        map_obj: Folium map object
+        nodes_lookup: Dictionary keyed by node id
+        edges: List of edge dictionaries
+    """
     for edge in edges:
         start = nodes_lookup.get(edge["from_node"])
         end = nodes_lookup.get(edge["to_node"])
@@ -51,7 +77,7 @@ def _add_edges(map_obj: folium.Map, nodes_lookup: dict[str, dict[str, Any]], edg
 
         color = ROAD_COLORS.get(edge.get("status", "open"), "gray")
         line = folium.PolyLine(
-            locations=[_node_position(start), _node_position(end)],
+            locations=[node_position(start), node_position(end)],
             color=color,
             weight=5,
             opacity=0.8,
@@ -63,16 +89,21 @@ def _add_edges(map_obj: folium.Map, nodes_lookup: dict[str, dict[str, Any]], edg
         line.add_to(map_obj)
 
 
-def _draw_path(
-    map_obj: folium.Map,
-    path: list[str],
-    nodes_lookup: dict[str, dict[str, Any]],
-    color: str,
-    label: str,
-) -> None:
+def draw_path(map_obj, path, nodes_lookup, color, label):
+    """
+    Draw one route if the path has at least two nodes.
+
+    Args:
+        map_obj: Folium map object
+        path: Node-id list
+        nodes_lookup: Dictionary keyed by node id
+        color: Polyline color string
+        label: Tooltip text
+    """
     if len(path) < 2:
         return
-    coordinates = [_node_position(nodes_lookup[node_id]) for node_id in path if node_id in nodes_lookup]
+
+    coordinates = [node_position(nodes_lookup[node_id]) for node_id in path if node_id in nodes_lookup]
     folium.PolyLine(
         locations=coordinates,
         color=color,
@@ -82,7 +113,13 @@ def _draw_path(
     ).add_to(map_obj)
 
 
-def _add_legend(map_obj: folium.Map) -> None:
+def add_legend(map_obj):
+    """
+    Attaches static legend HTML to the map canvas.
+
+    Args:
+        map_obj: Folium map object
+    """
     legend_html = """
     <div style="position: fixed;
                 bottom: 30px; left: 30px; width: 220px; z-index:9999; font-size:14px;
@@ -104,26 +141,35 @@ def _add_legend(map_obj: folium.Map) -> None:
     map_obj.get_root().html.add_child(folium.Element(legend_html))
 
 
-def build_map(
-    nodes: list[dict[str, Any]],
-    edges: list[dict[str, Any]],
-    best_plan: dict[str, Any] | None = None,
-) -> folium.Map:
+def build_map(nodes, edges, best_plan=None):
+    """
+    Build and return the full scenario map used in the Streamlit app.
+
+    Args:
+        nodes: List of node dictionaries
+        edges: List of edge dictionaries
+        best_plan: Optional selected plan dictionary
+
+    Returns:
+        Folium map object
+    """
     map_obj = folium.Map(location=MAP_CENTER, zoom_start=MAP_ZOOM, tiles=MAP_TILES)
     nodes_lookup = {node["id"]: node for node in nodes}
 
-    _add_edges(map_obj, nodes_lookup, edges)
-    _add_node_markers(map_obj, nodes)
+    # Step 1: draw static scenario elements.
+    add_edges(map_obj, nodes_lookup, edges)
+    add_node_markers(map_obj, nodes)
 
+    # Step 2: if a recommendation exists, draw route paths.
     if best_plan:
-        _draw_path(
+        draw_path(
             map_obj,
             best_plan.get("to_pickup_path", []),
             nodes_lookup,
             ROUTE_COLOR,
             "Vehicle to pickup",
         )
-        _draw_path(
+        draw_path(
             map_obj,
             best_plan.get("to_destination_path", []),
             nodes_lookup,
@@ -131,6 +177,6 @@ def build_map(
             "Pickup to destination",
         )
 
-    _add_legend(map_obj)
+    # Step 3: include legend for road/node colors.
+    add_legend(map_obj)
     return map_obj
-
