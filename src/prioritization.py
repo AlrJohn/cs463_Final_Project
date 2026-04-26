@@ -1,7 +1,7 @@
 """
 Greedy scoring and ranking helpers for pickup-group prioritization.
 
-This module separates:
+This module implements:
 - numeric score calculation
 - tie-break ordering rule
 """
@@ -12,7 +12,7 @@ from src.utils import remaining_capacity
 
 def score_pickup_group(pickup, total_route_cost, destination):
     """
-    Return the numeric score for one reachable pickup option.
+    Return the score for one reachable pickup option.
 
     Score formula:
         (severity * SEVERITY_MULTIPLIER) + (group_size * GROUP_SIZE_MULTIPLIER)
@@ -21,7 +21,7 @@ def score_pickup_group(pickup, total_route_cost, destination):
 
     Args:
         pickup: Pickup-group dictionary
-        total_route_cost: Combined vehicle->pickup and pickup->destination cost
+        total_route_cost: Combined vehicle to pickup and pickup to destination cost
         destination: Destination node dictionary
 
     Returns:
@@ -32,7 +32,7 @@ def score_pickup_group(pickup, total_route_cost, destination):
     group_size = int(pickup.get("group_size", 0) or 0)
     capacity_left = remaining_capacity(destination)
 
-    # Step 2: apply capacity safety penalty when destination is very tight.
+    # Step 2: apply capacity safety penalty when destination has not enough capacity.
     shelter_penalty = LOW_REMAINING_CAPACITY_PENALTY if capacity_left < group_size else 0
 
     # Step 3: compute final score.
@@ -41,7 +41,7 @@ def score_pickup_group(pickup, total_route_cost, destination):
 
 def priority_tuple(option):
     """
-    Rank reachable options using the agreed project rule.
+    Rank reachable options using the follwing priority order.
 
     Priority order:
     1. medical-need group first
@@ -54,9 +54,9 @@ def priority_tuple(option):
         option: One evaluated reachable option dictionary
 
     Returns:
-        Tuple used directly in Python max/sorted ranking
+        Tuple used directly in sorted ranking
     """
-    # Extract values once so the tuple stays easy to read and debug.
+    # Extract values once so the tuple stays clean and easy to read.
     pickup = option.get("pickup", {})
     medical_need = 1 if pickup.get("special_medical_need", False) else 0
     severity = int(pickup.get("severity_level", 0) or 0)

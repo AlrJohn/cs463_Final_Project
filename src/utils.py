@@ -5,13 +5,13 @@ Shared helper functions for lookups, capacity, and output formatting.
 
 def index_by_id(items):
     """
-    Build a dictionary keyed by each item's id.
+    Build a dictionary with keys as each item's id.
 
     Args:
         items: List of dictionaries containing id field
 
     Returns:
-        Dictionary keyed by id
+        Dictionary with id as keys
     """
     return {item["id"]: item for item in items}
 
@@ -24,7 +24,7 @@ def remaining_capacity(node):
         node: Shelter or hospital node dictionary
 
     Returns:
-        Non-negative integer capacity remaining
+        Integer capacity remaining
     """
     capacity = int(node.get("capacity", 0) or 0)
     occupancy = int(node.get("current_occupancy", 0) or 0)
@@ -84,5 +84,5 @@ def format_reasoning(pickup, destination, total_cost, route_time, danger_cost):
     else:
         destination_reason = f"The planner sends the group to {destination_name} based on capacity and the lowest reachable route cost."
 
-    # Step 2: combine explanation into one readable paragraph.
+    # Step 2: combine explanation.
     return " ".join([priority_intro, " ".join(detail_parts), destination_reason])

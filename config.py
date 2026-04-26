@@ -1,5 +1,5 @@
 """
-Global configuration for the evacuation route and priority planner.
+Overall configuration for the evacuation route and priority planner.
 
 This file stores:
 - Road status labels and penalties
@@ -14,14 +14,14 @@ ROAD_DANGEROUS = "dangerous"
 ROAD_BLOCKED = "blocked"
 ROAD_STATUSES = [ROAD_OPEN, ROAD_DANGEROUS, ROAD_BLOCKED]
 
-# Danger penalties used when building the weighted graph.
+# Danger penalties used when building the weighted graph
 DANGER_PENALTIES = {
     ROAD_OPEN: 0,
     ROAD_DANGEROUS: 15,
     ROAD_BLOCKED: float("inf"),
 }
 
-# Routing weights used by the risk-aware Dijkstra variant.
+# Routing weights used by the risk-aware Dijkstra algorithm.
 ROUTE_TRAVEL_TIME_WEIGHT = 1.0
 ROUTE_DANGER_WEIGHT = 1.0
 
@@ -33,7 +33,7 @@ LOW_REMAINING_CAPACITY_PENALTY = 8
 # Map display settings
 MAP_CENTER = [32.3415, 36.1905]
 MAP_ZOOM = 14
-MAP_TILES = "OpenStreetMap"
+MAP_TILES = "OpenStreetMap" # Where map info comes from
 
 NODE_COLORS = {
     "vehicle": "blue",

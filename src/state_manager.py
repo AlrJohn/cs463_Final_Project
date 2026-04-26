@@ -1,8 +1,8 @@
 """
-Session-state helpers for Streamlit interaction.
+Session-state helpers for Streamlit app interaction.
 
 This module manages:
-- current road statuses
+- current road status
 - default road snapshot for reset
 - last planner result and ranking list
 """
@@ -21,7 +21,7 @@ PLAN_RANKINGS_KEY = "plan_rankings"
 
 def initialize_state(edges):
     """
-    Initialize Streamlit state keys once at app startup.
+    Initialize Streamlit state keys once at app startup
 
     Args:
         edges: Default edge list from scenario data
@@ -38,17 +38,14 @@ def initialize_state(edges):
 
 def get_edges():
     """
-    Return mutable edge list from session state.
-
-    Returns:
-        List of edge dictionaries
+    Returns mutable edge list from session state
     """
     return st.session_state[EDGE_STATE_KEY]
 
 
 def update_edge_status(edge_id, new_status):
     """
-    Update one road status and refresh its danger penalty.
+    Update one road status and refresh its danger penalty
 
     Args:
         edge_id: Edge id string
@@ -57,7 +54,7 @@ def update_edge_status(edge_id, new_status):
     for edge in st.session_state[EDGE_STATE_KEY]:
         if edge["id"] == edge_id:
             edge["status"] = new_status
-            # Blocked roads are removed from the graph, so keep penalty 0 in UI state.
+            # Blocked roads are removed from the graph, so we keep penalty 0 in UI state.
             if new_status == "blocked":
                 edge["danger_penalty"] = 0
             else:

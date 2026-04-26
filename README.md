@@ -12,7 +12,7 @@ The system balances **speed and safety** under changing road conditions.
 - fixed scenario based on a simplified Al-Mafraq, Jordan setting
 - one vehicle, four pickup groups, two shelters, and one hospital
 - user-controlled road updates: `open`, `dangerous`, `blocked`
-- explicit Dijkstra-style implementation (min-heap) for weighted route computation
+- Dijkstra-style implementation for weighted route computation
 - greedy prioritization rule for selecting the next pickup group
 - shelter and hospital capacity checks
 - one-page Streamlit UI with map, controls, outputs, and ranking table
@@ -83,7 +83,7 @@ Implementation details:
 
 - `src/risk_routing.py` contains:
   - `compute_edge_cost(...)`
-  - `dijkstra_path(...)` (explicit heap-based Dijkstra implementation)
+  - `dijkstra_path(...)` (heap-based Dijkstra implementation)
   - `best_destination_path(...)`
   - `path_metrics(...)`
 - `src/planner.py` runs this routing twice for each waiting group:
@@ -118,5 +118,5 @@ Planner steps:
 1. For each waiting pickup group, find vehicle -> pickup route.
 2. Filter feasible destinations by medical rule and remaining capacity.
 3. Find pickup -> best destination route.
-4. Aggregate total cost/time/danger.
+4. Combine total cost/time/danger.
 5. Score and rank all reachable groups, then choose the top option.

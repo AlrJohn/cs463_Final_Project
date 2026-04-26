@@ -1,7 +1,7 @@
 """
-Risk-aware routing utilities for the evacuation planner.
+Routing utilities for the evacuation planner.
 
-This module implements an explicit Dijkstra-style algorithm
+This module implements a Dijkstra-style algorithm
 using a min-heap priority queue.
 """
 
@@ -17,8 +17,7 @@ def compute_edge_cost(edge):
     Compute non-negative edge cost used by Dijkstra.
 
     Cost formula:
-        (ROUTE_TRAVEL_TIME_WEIGHT * travel_time)
-      + (ROUTE_DANGER_WEIGHT * danger_penalty)
+        (ROUTE_TRAVEL_TIME_WEIGHT * travel_time) + (ROUTE_DANGER_WEIGHT * danger_penalty)
 
     Args:
         edge: Edge attribute dictionary from the graph
@@ -34,8 +33,6 @@ def compute_edge_cost(edge):
 def dijkstra_path(graph, start, end):
     """
     Return the minimum-cost path and total cost from start to end.
-
-    The graph is expected to contain only traversable edges.
 
     Algorithm Logic:
     1. Initialize all node distances to infinity except source (0)
@@ -67,28 +64,28 @@ def dijkstra_path(graph, start, end):
     previous = {node: None for node in graph.nodes}
     distances[start] = 0.0
 
-    # Min-heap stores (current_distance, node_id).
+    # Min-heap stores (current_distance, node_id)
     queue = [(0.0, start)]
 
-    # Step 2: repeatedly expand the cheapest node.
+    # Step 2: repeatedly expand the cheapest node
     while queue:
         current_dist, node = heapq.heappop(queue)
 
-        # Skip stale entries from earlier worse paths.
+        # Skip stale entries from earlier worse paths
         if current_dist > distances[node]:
             continue
 
-        # Early stop when we pop the target with best known cost.
+        # Early stop when we pop the target with best known cost
         if node == end:
             break
 
-        # Step 3: relax outgoing edges from current node.
+        # Step 3: relax outgoing edges from current node
         for neighbor in graph.neighbors(node):
             edge_data = graph[node][neighbor]
             edge_cost = compute_edge_cost(edge_data)
             new_dist = current_dist + edge_cost
 
-            # Update shortest known path to neighbor when improvement is found.
+            # Update shortest known path to neighbor when improvement is found
             if new_dist < distances[neighbor]:
                 distances[neighbor] = new_dist
                 previous[neighbor] = node
@@ -98,19 +95,19 @@ def dijkstra_path(graph, start, end):
     if distances[end] == float("inf"):
         return [], float("inf")
 
-    # Step 4: reconstruct path by walking parents backward.
+    # Step 4: reconstruct path by traversing parents backward.
     path = []
-    cursor = end
-    while cursor is not None:
-        path.append(cursor)
-        cursor = previous[cursor]
+    curr = end
+    while curr is not None:
+        path.append(curr)
+        curr = previous[curr]
     path.reverse()
     return path, float(distances[end])
 
 
 def path_metrics(graph, path):
     """
-    Aggregate distance/time/danger/cost totals for a chosen path.
+    Gather distance/time/danger/cost totals for a chosen path.
 
     Args:
         graph: NetworkX graph

@@ -16,7 +16,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
 
 
-def _read_json(path):
+def read_json(path):
     """
     Read a JSON file and return parsed Python data.
 
@@ -37,7 +37,7 @@ def load_nodes():
     Returns:
         List of node dictionaries
     """
-    return list(_read_json(DATA_DIR / "nodes.json"))
+    return list(read_json(DATA_DIR / "nodes.json"))
 
 
 def load_edges():
@@ -47,7 +47,7 @@ def load_edges():
     Returns:
         List of edge dictionaries
     """
-    return list(_read_json(DATA_DIR / "edges.json"))
+    return list(read_json(DATA_DIR / "edges.json"))
 
 
 def load_metadata():
@@ -57,7 +57,7 @@ def load_metadata():
     Returns:
         Metadata dictionary
     """
-    metadata = _read_json(DATA_DIR / "scenario_metadata.json")
+    metadata = read_json(DATA_DIR / "scenario_metadata.json")
     if not isinstance(metadata, dict):
         raise ValueError("Scenario metadata must be a JSON object.")
     return metadata
@@ -105,14 +105,7 @@ def pickups_to_dataframe(nodes):
     frame = pd.DataFrame([node for node in nodes if node.get("type") == "pickup"])
     if frame.empty:
         return frame
-    return frame[[
-        "id",
-        "name",
-        "group_size",
-        "severity_level",
-        "special_medical_need",
-        "status",
-    ]]
+    return frame[["id", "name", "group_size", "severity_level", "special_medical_need", "status"]]
 
 
 def shelters_to_dataframe(nodes):

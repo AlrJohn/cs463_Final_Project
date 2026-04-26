@@ -4,7 +4,7 @@ One-page Streamlit app for evacuation route and group-priority planning.
 Main UI flow:
 1. load scenario data and session state
 2. let user update road conditions
-3. run planner to compute best pickup+destination
+3. run planner to compute best pickup + destination
 4. render map, metrics, and ranking tables
 """
 
@@ -35,7 +35,7 @@ st.set_page_config(page_title=APP_TITLE, layout="wide")
 @st.cache_data
 def load_static_data():
     """
-    Load immutable scenario files once and cache them.
+    Load immutable scenario files once.
 
     Returns:
         Tuple (nodes, edges, metadata)
@@ -134,7 +134,7 @@ def main():
             reset_edges()
             st.rerun()
 
-    # Step 4: run planner on demand.
+    # Step 4: run planner when asked.
     if st.sidebar.button("Run Planner", type="primary", use_container_width=True):
         graph, _ = build_graph(nodes, get_edges())
         best_plan, rankings = choose_best_plan(graph, nodes)
@@ -184,7 +184,7 @@ def main():
         else:
             st.warning("Run the planner to generate the current recommendation.")
 
-    # Step 6: detail tables.
+    # Step 6: detail tables
     st.divider()
 
     left, right = st.columns(2, gap="large")

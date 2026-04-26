@@ -1,5 +1,5 @@
 """
-Map rendering helpers using Folium.
+Simple Map rendering helpers using Folium.
 
 This module draws:
 - node markers
