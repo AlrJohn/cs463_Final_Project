@@ -1,6 +1,6 @@
 {
   "name": "Al-Mafraq Simplified Evacuation Scenario",
-  "description": "A simplified conflict-inspired evacuation scenario built on a real-world-inspired road network in Al-Mafraq, Jordan.",
+  "description": "A simplified conflict-inspired evacuation scenario built on a real-world road network in Al-Mafraq, Jordan.",
   "region": "Al-Mafraq, Jordan",
   "vehicle_count": 1,
   "pickup_group_count": 4,

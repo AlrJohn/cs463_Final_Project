@@ -16,7 +16,7 @@ from config import (
 
 def compute_edge_weight(edge):
     """
-    Compute weighted edge cost used by using a risk-aware routing logic.
+    Compute weighted edge cost by using a risk-aware routing logic.
 
     Weight formula:
     (ROUTE_TRAVEL_TIME_WEIGHT * travel_time) + (ROUTE_DANGER_WEIGHT * danger_penalty)
@@ -42,7 +42,7 @@ def build_graph(nodes, edges):
     Args:
         nodes: List of node dictionaries
         edges: List of edge dictionaries
-        
+
     Returns:
     - graph: nx.Graph with node/edge attributes attached
     - node_lookup: dict with node id as keys
